@@ -1,0 +1,41 @@
+import numpy as np
+def mod_inverse_matrix(matrix, modulus):
+    det = int(np.round(np.linalg.det(matrix)))  # Determinant of the matrix
+    det_inv = pow(det, -1, modulus)  # Modular inverse of the determinant
+    matrix_modulus_inv = (
+        det_inv * np.round(det * np.linalg.inv(matrix)).astype(int) % modulus
+    )
+    return matrix_modulus_inv
+def hill_encrypt(plaintext, key_matrix):
+    plaintext_numbers = [ord(char) - ord('A') for char in plaintext.upper()
+    vectors = [
+        plaintext_numbers[i:i + key_matrix.shape[0]]
+        for i in range(0, len(plaintext_numbers), key_matrix.shape[0])
+    ]
+    if len(vectors[-1]) < key_matrix.shape[0]:
+        vectors[-1].extend([0] * (key_matrix.shape[0] - len(vectors[-1])))
+    encrypted_vectors = [np.dot(key_matrix, vec) % 26 for vec in vectors]
+    ciphertext = ''.join(
+        ''.join(chr(num + ord('A')) for num in vec) for vec in encrypted_vectors
+    )
+    return ciphertext
+def hill_decrypt(ciphertext, key_matrix):
+    ciphertext_numbers = [ord(char) - ord('A') for char in ciphertext.upper()]
+    vectors = [
+        ciphertext_numbers[i:i + key_matrix.shape[0]]
+        for i in range(0, len(ciphertext_numbers), key_matrix.shape[0])
+    ]
+    key_matrix_inv = mod_inverse_matrix(key_matrix, 26)
+    decrypted_vectors = [np.dot(key_matrix_inv, vec) % 26 for vec in vectors]
+    plaintext = ''.join(
+        ''.join(chr(num + ord('A')) for num in vec) for vec in decrypted_vectors
+    )
+    return plaintext
+key_matrix = np.array([[3, 3], [2, 5]])
+plaintext = "HELLO"
+
+encrypted_message = hill_encrypt(plaintext, key_matrix)
+print(f"Encrypted Message: {encrypted_message}")
+
+decrypted_message = hill_decrypt(encrypted_message, key_matrix)
+print(f"Decrypted Message: {decrypted_message}")
