@@ -1,0 +1,146 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define SIZE 5
+
+// Function to remove duplicates from a string
+void removeDuplicates(char *str) {
+    int index = 0, i, j;
+    for (i = 0; i < strlen(str); i++) {
+        for (j = 0; j < i; j++) {
+            if (str[i] == str[j]) {
+                break;
+            }
+        }
+        if (j == i) {
+            str[index++] = str[i];
+        }
+    }
+    str[index] = '\0';
+}
+
+// Function to construct the 5x5 key matrix
+void constructMatrix(char keyMatrix[SIZE][SIZE], char *key) {
+    int i, j, k = 0, alphabets[26] = {0};
+    
+    // Prepare the matrix with the given key
+    for (i = 0; i < strlen(key); i++) {
+        if (key[i] != 'J') {
+            keyMatrix[k / SIZE][k % SIZE] = key[i];
+            alphabets[key[i] - 'A'] = 1;
+            k++;
+        }
+    }
+    
+    // Fill the remaining matrix with other letters
+    for (i = 0; i < 26; i++) {
+        if (!alphabets[i] && (i + 'A') != 'J') {
+            keyMatrix[k / SIZE][k % SIZE] = i + 'A';
+            k++;
+        }
+    }
+}
+
+// Function to find the position of a character in the matrix
+void findPosition(char keyMatrix[SIZE][SIZE], char c, int *row, int *col) {
+    int i, j;
+    for (i = 0; i < SIZE; i++) {
+        for (j = 0; j < SIZE; j++) {
+            if (keyMatrix[i][j] == c) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+// Function to prepare the plaintext (removing spaces, converting 'J' to 'I', etc.)
+void prepareText(char *text) {
+    int i, index = 0;
+    for (i = 0; text[i] != '\0'; i++) {
+        if (isalpha(text[i])) {
+            text[index++] = toupper(text[i]);
+        }
+    }
+    text[index] = '\0';
+    
+    for (i = 0; text[i] != '\0'; i += 2) {
+        if (text[i] == 'J') {
+            text[i] = 'I';
+        }
+        if (text[i + 1] == 'J') {
+            text[i + 1] = 'I';
+        }
+        if (text[i] == text[i + 1]) {
+            memmove(&text[i + 2], &text[i + 1], strlen(text) - i);
+            text[i + 1] = 'X';
+        }
+    }
+
+    if (strlen(text) % 2 != 0) {
+        text[strlen(text)] = 'X';
+        text[strlen(text) + 1] = '\0';
+    }
+}
+
+// Function to encrypt the plaintext using the Playfair cipher
+void encrypt(char keyMatrix[SIZE][SIZE], char *plaintext, char *ciphertext) {
+    int i, row1, col1, row2, col2;
+    for (i = 0; plaintext[i] != '\0'; i += 2) {
+        findPosition(keyMatrix, plaintext[i], &row1, &col1);
+        findPosition(keyMatrix, plaintext[i + 1], &row2, &col2);
+
+        if (row1 == row2) {
+            // Same row, shift right
+            ciphertext[i] = keyMatrix[row1][(col1 + 1) % SIZE];
+            ciphertext[i + 1] = keyMatrix[row2][(col2 + 1) % SIZE];
+        } else if (col1 == col2) {
+            // Same column, shift down
+            ciphertext[i] = keyMatrix[(row1 + 1) % SIZE][col1];
+            ciphertext[i + 1] = keyMatrix[(row2 + 1) % SIZE][col2];
+        } else {
+            // Rectangle case
+            ciphertext[i] = keyMatrix[row1][col2];
+            ciphertext[i + 1] = keyMatrix[row2][col1];
+        }
+    }
+    ciphertext[i] = '\0';
+}
+
+int main() {
+    char key[26], plaintext[100], ciphertext[100];
+    char keyMatrix[SIZE][SIZE];
+
+    printf("Enter key (without spaces): ");
+    scanf("%s", key);
+    getchar(); // to consume newline character
+
+    printf("Enter plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    plaintext[strcspn(plaintext, "\n")] = '\0'; // Remove the newline character
+
+    // Remove duplicate letters from key and construct the key matrix
+    removeDuplicates(key);
+    prepareText(plaintext);
+    constructMatrix(keyMatrix, key);
+
+    // Print the key matrix
+    printf("Key Matrix:\n");
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%c ", keyMatrix[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Encrypt the plaintext
+    encrypt(keyMatrix, plaintext, ciphertext);
+
+    // Output the ciphertext
+    printf("Ciphertext: %s\n", ciphertext);
+
+    return 0;
+}
