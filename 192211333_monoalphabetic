@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to encrypt the plaintext using a monoalphabetic substitution cipher
+void monoalphabeticEncrypt(char* plaintext, char* ciphertext, char* key) {
+    int i, j;
+    char ch;
+    char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    // Loop through each character in the plaintext
+    for (i = 0; plaintext[i] != '\0'; ++i) {
+        ch = plaintext[i];
+
+        // Check if the character is a letter
+        if (isalpha(ch)) {
+            // Find the corresponding ciphertext character
+            if (isupper(ch)) {
+                for (j = 0; j < 26; ++j) {
+                    if (alphabet[j] == ch) {
+                        ciphertext[i] = key[j];
+                        break;
+                    }
+                }
+            } else if (islower(ch)) {
+                ch = toupper(ch);
+                for (j = 0; j < 26; ++j) {
+                    if (alphabet[j] == ch) {
+                        ciphertext[i] = tolower(key[j]);
+                        break;
+                    }
+                }
+            }
+        } else {
+            // If it's not a letter, leave it unchanged
+            ciphertext[i] = ch;
+        }
+    }
+
+    // Null-terminate the ciphertext string
+    ciphertext[i] = '\0';
+}
+
+int main() {
+    char plaintext[100];
+    char ciphertext[100];
+    
+    // Define a key for monoalphabetic substitution cipher
+    char key[] = "QWERTYUIOPLKJHGFDSAZXCVBNM"; // Example key
+
+    // Get the plaintext from the user
+    printf("Enter plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    plaintext[strcspn(plaintext, "\n")] = '\0'; // Remove the trailing newline character
+
+    // Encrypt the plaintext
+    monoalphabeticEncrypt(plaintext, ciphertext, key);
+
+    // Output the encrypted message
+    printf("Ciphertext: %s\n", ciphertext);
+
+    return 0;
+}
