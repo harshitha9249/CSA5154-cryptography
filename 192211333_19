@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <string.h>
+
+// Function to encrypt the string using Caesar Cipher
+void caesarCipher(char* text, int shift) {
+    int i;
+    char ch;
+    
+    // Loop through each character in the string
+    for(i = 0; text[i] != '\0'; ++i) {
+        ch = text[i];
+        
+        // Check if the character is a letter
+        if(ch >= 'a' && ch <= 'z') {
+            ch = ch + shift;
+            
+            // Wrap around if the shift goes past 'z'
+            if(ch > 'z') {
+                ch = ch - 'z' + 'a' - 1;
+            }
+            
+            text[i] = ch;
+        }
+        else if(ch >= 'A' && ch <= 'Z') {
+            ch = ch + shift;
+            
+            // Wrap around if the shift goes past 'Z'
+            if(ch > 'Z') {
+                ch = ch - 'Z' + 'A' - 1;
+            }
+            
+            text[i] = ch;
+        }
+    }
+}
+
+int main() {
+    char text[100];
+    int shift;
+    
+    // Get the input string from the user
+    printf("Enter a string: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = '\0'; // Remove the trailing newline character
+    
+    // Get the shift value from the user
+    printf("Enter the shift value (1-25): ");
+    scanf("%d", &shift);
+    
+    // Ensure the shift value is within the valid range
+    if(shift < 1 || shift > 25) {
+        printf("Invalid shift value. Please enter a value between 1 and 25.\n");
+        return 1;
+    }
+    
+    // Encrypt the string using Caesar Cipher
+    caesarCipher(text, shift);
+    
+    // Output the encrypted string
+    printf("Encrypted string: %s\n", text);
+    
+    return 0;
+}
