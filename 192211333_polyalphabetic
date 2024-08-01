@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to encrypt the plaintext using the Vigenère cipher
+void encrypt(char* plaintext, char* key, char* ciphertext) {
+    int keyLength = strlen(key);
+    int textLength = strlen(plaintext);
+    int i, keyIndex;
+
+    for (i = 0, keyIndex = 0; i < textLength; i++) {
+        if (isalpha(plaintext[i])) {
+            char base = isupper(plaintext[i]) ? 'A' : 'a';
+            char keyBase = isupper(key[keyIndex % keyLength]) ? 'A' : 'a';
+            ciphertext[i] = ((plaintext[i] - base) + (key[keyIndex % keyLength] - keyBase)) % 26 + base;
+            keyIndex++;
+        } else {
+            ciphertext[i] = plaintext[i]; // Non-alphabetical characters remain unchanged
+        }
+    }
+    ciphertext[i] = '\0';
+}
+
+// Function to decrypt the ciphertext using the Vigenère cipher
+void decrypt(char* ciphertext, char* key, char* plaintext) {
+    int keyLength = strlen(key);
+    int textLength = strlen(ciphertext);
+    int i, keyIndex;
+
+    for (i = 0, keyIndex = 0; i < textLength; i++) {
+        if (isalpha(ciphertext[i])) {
+            char base = isupper(ciphertext[i]) ? 'A' : 'a';
+            char keyBase = isupper(key[keyIndex % keyLength]) ? 'A' : 'a';
+            plaintext[i] = ((ciphertext[i] - base) - (key[keyIndex % keyLength] - keyBase) + 26) % 26 + base;
+            keyIndex++;
+        } else {
+            plaintext[i] = ciphertext[i]; // Non-alphabetical characters remain unchanged
+        }
+    }
+    plaintext[i] = '\0';
+}
+
+int main() {
+    char plaintext[100], key[100], ciphertext[100];
+
+    printf("Enter the plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    plaintext[strcspn(plaintext, "\n")] = '\0'; // Remove newline character
+
+    printf("Enter the key: ");
+    fgets(key, sizeof(key), stdin);
+    key[strcspn(key, "\n")] = '\0'; // Remove newline character
+
+    // Convert key to uppercase
+    for (int i = 0; i < strlen(key); i++) {
+        key[i] = toupper(key[i]);
+    }
+
+    encrypt(plaintext, key, ciphertext);
+    printf("Encrypted text: %s\n", ciphertext);
+
+    decrypt(ciphertext, key, plaintext);
+    printf("Decrypted text: %s\n", plaintext);
+
+    return 0;
+}
